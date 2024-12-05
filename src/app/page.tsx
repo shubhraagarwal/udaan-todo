@@ -4,14 +4,15 @@ import Image from "next/image";
 import { useState } from "react";
 import Check from "../../public/checkmark.png";
 import Delete from "../../public/delete.png";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { Draggable, Droppable } from "react-drag-and-drop";
 
 export default function Home() {
   const [inputTodo, setInputTodo] = useState("");
   const [todo, setTodo] = useState<[]>([]);
   const [completedTask, setCompletedTask] = useState([]);
 
-  function ondrop(task) {
+  function ondrop(data: any) {
+    const task = data.todo;
     setCompletedTask([...completedTask, task]);
     setTodo(todo.filter((item) => item !== task));
   }
@@ -36,71 +37,70 @@ export default function Home() {
             <p className="text-lg">+</p>
           </button>
         </div>
-        <DragDropContext>
-          <div className="flex w-full flex-col  gap-5">
-            <p>Tasks to do - {todo.length}</p>
+
+        <div className="flex w-full flex-col  gap-5">
+          <p>Tasks to do - {todo.length}</p>
+          <ul className="flex flex-col gap-4">
+            {todo.map((task, index) => {
+              return (
+                <Draggable
+                  key={index}
+                  type="todo"
+                  data={task}
+                >
+                  <li className="flex items-center p-2 justify-between px-4 py-4 bg-[#15101C] w-full rounded-lg text-[#9e78cf]">
+                    {" "}
+                    {task}{" "}
+                    <div className="flex items-center gap-4">
+                      <Image
+                        src={Check}
+                        alt="checkmark"
+                        width={12}
+                        height={12}
+                        className="hover:cursor-pointer"
+                        onClick={() => {
+                          setCompletedTask([...completedTask, task]);
+                          setTodo(todo.filter((item) => item !== task));
+                        }}
+                      />
+                      <Image
+                        src={Delete}
+                        alt="delete"
+                        width={12}
+                        className="hover:cursor-pointer"
+                        height={12}
+                        onClick={() => {
+                          setTodo(todo.filter((item) => item !== task));
+                        }}
+                      />
+                    </div>
+                  </li>
+                </Draggable>
+              );
+            })}
+          </ul>
+        </div>
+        <div className="flex w-full flex-col gap-5">
+          <p>Done - {completedTask.length}</p>
+          <Droppable
+            types={["todo"]}
+            onDrop={ondrop}
+          >
             <ul className="flex flex-col gap-4">
-              {todo.map((task, index) => {
+              {completedTask.map((task, index) => {
                 return (
-                  <Draggable
+                  <li
                     key={index}
-                    type="todo"
-                    data={task}
+                    className="flex items-center p-2 justify-between px-4 py-4 bg-[#15101C] w-full rounded-lg text-[#78cfb0] line-through"
                   >
-                    <li className="flex items-center p-2 justify-between px-4 py-4 bg-[#15101C] w-full rounded-lg text-[#9e78cf]">
-                      {" "}
-                      {task}{" "}
-                      <div className="flex items-center gap-4">
-                        <Image
-                          src={Check}
-                          alt="checkmark"
-                          width={12}
-                          height={12}
-                          className="hover:cursor-pointer"
-                          onClick={() => {
-                            setCompletedTask([...completedTask, task]);
-                            setTodo(todo.filter((item) => item !== task));
-                          }}
-                        />
-                        <Image
-                          src={Delete}
-                          alt="delete"
-                          width={12}
-                          className="hover:cursor-pointer"
-                          height={12}
-                          onClick={() => {
-                            setTodo(todo.filter((item) => item !== task));
-                          }}
-                        />
-                      </div>
-                    </li>
-                  </Draggable>
+                    {" "}
+                    {task}
+                  </li>
                 );
               })}
             </ul>
-          </div>
-          <div className="flex w-full flex-col gap-5">
-            <p>Done - {completedTask.length}</p>
-            <Droppable
-              types={["todo"]}
-              onDrop={ondrop}
-            >
-              <ul className="flex flex-col gap-4">
-                {completedTask.map((task, index) => {
-                  return (
-                    <li
-                      key={index}
-                      className="flex items-center p-2 justify-between px-4 py-4 bg-[#15101C] w-full rounded-lg text-[#78cfb0] line-through"
-                    >
-                      {" "}
-                      {task}
-                    </li>
-                  );
-                })}
-              </ul>
-            </Droppable>
-          </div>
-        </DragDropContext>
+          </Droppable>
+        </div>
       </div>
     </div>
   );
